@@ -75,13 +75,14 @@ def main(argv):
     queries = """\
     SELECT count(*) cnt, HEADERS
     -- please change the table name to yours
-    FROM combined
+    FROM cloudfront_standard_logs
     -- filtering 24 hours(1d) data
-    WHERE concat(year, month, day, hour) >= DATE_FORMAT
+    --WHERE concat(year, month, day, hour) >= DATE_FORMAT
+    WHERE date =DATE('2024-07-29') and time like '07:30%' 
     GROUP BY HEADERS
     ORDER BY cnt desc
     -- top 10 requests
-    limit 10"""
+    -- limit 10"""
 
     now = datetime.utcnow()
     # filtering -24hours(1d) data
@@ -90,13 +91,13 @@ def main(argv):
     #filtered_date = (now - timedelta(hours=5)).strftime('%Y%m%d%H')
     athena_query = queries.replace("DATE_FORMAT","'" + filtered_date + "'")
     athena_query = athena_query.replace("HEADERS", req_headers)
-    #print(athena_query)
+    print(athena_query)
 
     # please change the values in params to your region, database, bucket, path.
-    region = "ap-northeast-2"
-    database = "yourdatabasename"
-    bucket = "yourbucketname"
-    path = "temp/athena/output"
+    region = "us-east-1"
+    database = "default"
+    bucket = "cf-st-web-uat-logs"
+    path = "athena-results/"
 
     params = {
         'region': region,
@@ -129,11 +130,11 @@ def main(argv):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="testing CloudFront Function \
-        ex. python3 testingCFF.py --function functionName --eventType viewer-response --headers request_ip referrer")
+        ex. python3 testingCFF.py --function functionName --eventType viewer-response --headers c_ip referrer")
     parser.add_argument('--function', metavar='function_name', required=True, help='CloudFront Fucntion Name')
     parser.add_argument('--eventType', metavar='eventType', required=False, default="viewer-request", help='default Value: %(default)s')
-    parser.add_argument('--headers', choices=['request_ip', 'method', 'uri', 'referrer', 'user_agent', 'query_string', 'cookie', 'host_header'], nargs='+', metavar='headers', required=False, default=['request_ip', 'uri', 'referrer'], help='default Value: %(default)s\
-        , valid headers: request_ip, method, uri, referrer, user_agent, query_string, cookie, host_header')
+    parser.add_argument('--headers', choices=['c_ip', 'cs_method', 'cs_uri_stem', 'cs_referrer', 'cs_user_agent', 'cs_uri_query', 'cs_cookie', 'cs_host'], nargs='+', metavar='headers', required=False, default=['c_ip', 'cs_uri_stem', 'cs_referrer'], help='default Value: %(default)s\
+        , valid headers: c_ip, cs_method, cs_uri_stem, cs_referrer, cs_user_agent, cs_uri_query, cs_cookie, cs_host')
 
     args = parser.parse_args()
     main(args)

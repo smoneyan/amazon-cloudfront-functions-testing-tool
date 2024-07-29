@@ -39,7 +39,7 @@ def testFunction(session, **kwargs):
         #change values in json template
         for header in kwargs["headers"]:
             #clientIP
-            if header == "request_ip":
+            if header == "c_ip":
                 request_ip = kwargs["athenaResult"][header]
                 req_header_values.append(request_ip)
                 data["viewer"] = {}
@@ -50,12 +50,12 @@ def testFunction(session, **kwargs):
                 req_header_values.append(method)
                 data["request"][header] = method
             #uri
-            if header == "uri":
+            if header == "cs_uri_stem":
                 uri = parse.unquote(kwargs["athenaResult"][header])
                 req_header_values.append(uri)
-                data["request"][header] = uri
+                data["request"]["uri"] = uri
             #querystring
-            if header == "query_string":
+            if header == "cs_uri_query":
                 query_string = parse.unquote(kwargs["athenaResult"][header])
                 #req_header_values.append(query_string) # doesn't need to add it into req_header_values array cause uri includes query_string.
                 if query_string != "-":
@@ -69,31 +69,31 @@ def testFunction(session, **kwargs):
                         data["request"]["querystring"][key] = {}
                         data["request"]["querystring"][key]["value"] = value
             #header
-            if header in ["referrer", "user_agent", "host_header", "cookie"]:
+            if header in ["cs_referrer", "cs_user_agent", "cs_host", "cs_cookie"]:
                 data["request"]["headers"] = {}
                 #referer
-                if header == "referrer":
+                if header == "cs_referrer":
                     referrer = parse.unquote(kwargs["athenaResult"][header])
                     req_header_values.append(referrer)
                     if referrer != "-":
                         data["request"]["headers"]["referer"] = {}
                         data["request"]["headers"]["referer"]["value"] = referrer
                 #user-agent
-                if header == "user_agent":
+                if header == "cs_user_agent":
                     user_agent = parse.unquote(kwargs["athenaResult"][header])
                     req_header_values.append(user_agent)
                     if user_agent != "-":
-                        data["request"]["headers"][header] = {}
-                        data["request"]["headers"][header]["value"] = user_agent
+                        data["request"]["headers"]["user-agent"] = {}
+                        data["request"]["headers"]["user-agent"]["value"] = user_agent
                 #host
-                if header == "host_header":
+                if header == "cs_host":
                     host_header = parse.unquote(kwargs["athenaResult"][header])
                     req_header_values.append(host_header)
                     if host_header != "-":
                         data["request"]["headers"]["host"] = {}
                         data["request"]["headers"]["host"]["value"] = host_header
                 #cookie
-                if header == "cookie":
+                if header == "cs_cookie":
                     cookies = parse.unquote(kwargs["athenaResult"][header])
                     req_header_values.append(cookies)
                     if cookies != "-":
@@ -127,12 +127,14 @@ def testFunction(session, **kwargs):
     #input(1.2.3.4, google.com, /ask) → output (Err, 90%)
     if query_string != "-":
         uri = uri + "?" + query_string
-        req_header_values[kwargs["headers"].index("uri")] = uri
+        req_header_values[kwargs["headers"].index("cs_uri_stem")] = uri
 
     # highlight if cpu utilize more than 80%
     cpu = '\033[31m' + cpu + '\033[0m' if int(cpu) > 80 else cpu
 
+    # print(req_header_values)
     # print test results
-    print('input(' + ', '.join([str(req_header) for req_header in req_header_values]) + ")" + " --> output({}, {}%)".format(status, cpu))
+    #print('input(' + ', '.join([str(req_header) for req_header in req_header_values]) + ")" + " --> output({}, {}%)".format(status, cpu))
+    print('input(' + ', '.join([str(req_header_values[1])]) + ")" + " --> output({}, {}%)".format(status, cpu))
 
     return cpu, status

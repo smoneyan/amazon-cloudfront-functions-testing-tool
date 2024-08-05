@@ -37,6 +37,7 @@ def testFunction(session, **kwargs):
         data = json.load(f)
 
         #change values in json template
+        data["request"]["headers"] = {}
         for header in kwargs["headers"]:
             #clientIP
             if header == "c_ip":
@@ -68,9 +69,10 @@ def testFunction(session, **kwargs):
 
                         data["request"]["querystring"][key] = {}
                         data["request"]["querystring"][key]["value"] = value
+
             #header
             if header in ["cs_referrer", "cs_user_agent", "cs_host", "cs_cookie"]:
-                data["request"]["headers"] = {}
+                # data["request"]["headers"] = {}
                 #referer
                 if header == "cs_referrer":
                     referrer = parse.unquote(kwargs["athenaResult"][header])
@@ -108,7 +110,7 @@ def testFunction(session, **kwargs):
                             data["request"]["cookies"][key]["value"] = value
 
     #print input event_struction
-    #print(json.dumps(data, default=json_default, indent=4))
+    # print(json.dumps(data, default=json_default, indent=4))
 
     # test
     response = client.test_function(

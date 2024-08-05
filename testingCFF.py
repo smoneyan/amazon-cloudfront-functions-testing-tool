@@ -78,7 +78,7 @@ def main(argv):
     FROM cloudfront_standard_logs
     -- filtering 24 hours(1d) data
     --WHERE concat(year, month, day, hour) >= DATE_FORMAT
-    WHERE date =DATE('2024-07-29') and time like '07:30%' 
+    WHERE x_edge_request_id IN ('lXw1h5JAub09igfmtAv6GAciMxB9MFZHcY5eP46n8fiF-G4d9eqhNg==', 'qqT5yI0LLICDENkDejKavOh6jMISTppuhbap5e3joJ9bc8ZBjMmwZQ==')
     GROUP BY HEADERS
     ORDER BY cnt desc
     -- top 10 requests
@@ -111,6 +111,7 @@ def main(argv):
 
     # Query Athena and get the s3 filename and query results
     location, data = athena_to_s3(session, params)
+
 
     #get CloudFront Function ETag - pre-requisite parameter of CFF test
     functionName = argv.function
